@@ -64,7 +64,6 @@
             width: 100%;
             display: block;
         }
-        /* Стили для калибровочных линий */
         .guide-line {
             position: absolute;
             left: 0;
@@ -110,7 +109,7 @@
 
 <div class="app-container">
     <h1>🧪 IMBIAN «Ферритин-ИХА»</h1>
-    <p>Загрузите фото окошка теста и совместите цветные линии с полосками на кассете для сверхточного анализа.</p>
+    <p>Загрузите фото окошка теста и совместите цветные линии с полосками на кассете.</p>
 
     <div class="upload-zone" onclick="document.getElementById('file-input').click()">
         <span style="font-size: 30px;">📸</span>
@@ -133,7 +132,6 @@
     const previewBox = document.getElementById('preview-box');
     const testImage = document.getElementById('test-image');
 
-    // Логика отображения загруженного фото
     fileInput.addEventListener('change', function(e) {
         const file = e.target.files[0];
         if (file) {
@@ -146,12 +144,12 @@
         }
     });
 
-    // Делаем линии перетаскиваемыми мышкой или пальцем
+    // УЛУЧШЕННАЯ ИСПРАВЛЕННАЯ ИНСТРУКЦИЯ ДЛЯ ДВИЖЕНИЯ ЛИНИЙ (БЕЗ ДЕРГАНИЯ ЭКРАНА)
     function makeDraggable(element) {
         let isDragging = false;
 
         element.addEventListener('mousedown', (e) => { isDragging = true; e.preventDefault(); });
-        element.addEventListener('touchstart', (e) => { isDragging = true; });
+        element.addEventListener('touchstart', (e) => { isDragging = true; e.preventDefault(); }, { passive: false });
 
         window.addEventListener('mousemove', (e) => {
             if (!isDragging) return;
@@ -164,43 +162,43 @@
 
         window.addEventListener('touchmove', (e) => {
             if (!isDragging) return;
+            e.preventDefault(); 
             const rect = previewBox.getBoundingClientRect();
             let y = e.touches[0].clientY - rect.top;
             if (y >= 0 && y <= rect.height) {
                 element.style.top = (y / rect.height * 100) + '%';
             }
-        });
+        }, { passive: false });
 
         window.addEventListener('mouseup', () => isDragging = false);
         window.addEventListener('touchend', () => isDragging = false);
     }
 
+    // Применяем инструкцию к трем линиям
     makeDraggable(document.getElementById('line-c'));
     makeDraggable(document.getElementById('line-r'));
     makeDraggable(document.getElementById('line-t'));
 
-    
     function analyzeResult() {
         const posC = parseFloat(document.getElementById('line-c').style.top) || 25;
         const posR = parseFloat(document.getElementById('line-r').style.top) || 50;
         const posT = parseFloat(document.getElementById('line-t').style.top) || 75;
 
-        // Собираем данные в один пакет
         const dataToSend = {
             line_c: posC.toFixed(1),
             line_r: posR.toFixed(1),
             line_t: posT.toFixed(1)
         };
 
-        // Отправляем данные обратно в нашего Python-бота и закрываем мини-приложение
         if (window.Telegram && window.Telegram.WebApp) {
             window.Telegram.WebApp.sendData(JSON.stringify(dataToSend));
         } else {
-            alert("Данные зафиксированы: " + JSON.stringify(dataToSend));
+            alert("Тест вне Telegram. Данные: " + JSON.stringify(dataToSend));
         }
     }
-
 </script>
 
 </body>
 </html>
+
+           
